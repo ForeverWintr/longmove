@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-longmove = "longmove:main"
+lm = "longmove.main:main"
 
 [build-system]
 requires = ["hatchling"]
