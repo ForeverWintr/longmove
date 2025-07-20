@@ -3,17 +3,24 @@ name = "longmove"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
+authors = [
+    { name = "tomrutherford", email = "tmrutherford@gmail.com" }
+]
 requires-python = ">=3.13"
 dependencies = [
     "click>=8.2.1",
     "trio>=0.30.0",
 ]
 
+[project.scripts]
+longmove = "longmove:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.1",
     "ruff>=0.12.4",
 ]
-
-[project.scripts]
-lm = "main:main"
