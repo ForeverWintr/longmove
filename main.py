@@ -1,6 +1,6 @@
-def main():
-    print("Hello from longmove!")
+import click
 
 
-if __name__ == "__main__":
-    main()
+@click.command()
+def main() -> None:
+    print("hello")
