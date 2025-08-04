@@ -208,3 +208,6 @@ __marimo__/
 
 # Wing
 *.wpu
+
+# MacOS
+.DS_Store
