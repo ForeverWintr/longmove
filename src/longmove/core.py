@@ -1,6 +1,17 @@
+import functools
+import subprocess
+
 import trio
 
 
 async def rsync_copy(src: str, target: str):
-    await trio.run_process(["rsync", "-a", src, target])
-    asdf
+    runner = functools.partial(
+        trio.run_process,
+        command=["rsync", "-a", "--progress", "--compress", src, target],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    async with trio.open_nursery() as nursery:
+        p = await nursery.start(runner)
+        stderr = await p.stderr.receive_some()
+        stdout = await p.stdout.receive_some()
