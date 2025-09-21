@@ -9,13 +9,12 @@ from longmove.config_file import ConfigFile, CONFIG_PATH
 from longmove import util
 
 
-
 @click.group()
 def main() -> None:
-    print("hello")
+    pass
 
 
-@main.command(name="init", help='Initialize a new longmove config file')
+@main.command(name="init", help="Initialize a new longmove config file")
 @click.option(
     "--server",
     help="The remote server url",
@@ -29,7 +28,7 @@ def main() -> None:
     is_flag=True,
     help="Overwrite an existing config file",
 )
-def init(server: str | None, remote_root: str | None, force: bool):
+def init(server: str | None, remote_root: str | None, force: bool) -> None:
     if not force and CONFIG_PATH.exists():
         raise click.BadOptionUsage(
             "--force", f"{CONFIG_PATH} already exists. Pass --force to overwrite."
@@ -46,8 +45,11 @@ def init(server: str | None, remote_root: str | None, force: bool):
     c.to_file(CONFIG_PATH)
     click.echo(f"Wrote config file at {CONFIG_PATH}")
 
-@main.command('register', help='Register a file to be offloaded.')
-@click.argument('file', type=util.LocalPath)
+
+@main.command("register", help="Register a file to be offloaded.")
+@click.argument("path", type=util.LocalPath())
+def register(path: Path) -> None:
+    print(path)
 
 
 if __name__ == "__main__":
