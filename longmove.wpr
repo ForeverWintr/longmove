@@ -11,6 +11,9 @@ proj.directory-list = [{'dirloc': loc('.'),
                         'recursive': True,
                         'watch_for_changes': True}]
 proj.file-type = 'shared'
+proj.launch-config = {loc('src/longmove/main.py'): ('project',
+        ('init',
+         ''))}
 testing.auto-test-file-specs = (('glob',
                                  'test_*'),)
 testing.test-framework = {None: ':internal pytest'}

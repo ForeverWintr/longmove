@@ -5,6 +5,8 @@ from pathlib import Path
 
 import tomlkit
 
+CONFIG_PATH = Path("~/.longmove.toml").expanduser()
+
 
 @dataclasses.dataclass(frozen=True)
 class ConfigFile:
