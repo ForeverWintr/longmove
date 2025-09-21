@@ -21,6 +21,6 @@ def test_localpath(tmp_path: Path) -> None:
 
     # relative paths not allowed
     with pytest.MonkeyPatch.context() as m:
-        m.setenv(name="PWD", value=str(tmp_path))
+        m.chdir(tmp_path)
         p = r(".")
         assert p == tmp_path
