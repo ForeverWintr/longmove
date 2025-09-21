@@ -4,6 +4,7 @@ import pytest
 import click
 
 from longmove import util
+from longmove.config_file import ConfigFile
 
 
 def test_localpath(tmp_path: Path) -> None:
@@ -24,3 +25,16 @@ def test_localpath(tmp_path: Path) -> None:
         m.chdir(tmp_path)
         p = r(".")
         assert p == tmp_path
+
+
+def test_configfile(tmp_path: Path) -> None:
+    lc = util.LongmoveConfig()
+
+    with pytest.raises(click.BadParameter) as e:
+        lc(tmp_path / "doesntexist")
+
+    exists = tmp_path / "config.toml"
+    cf = ConfigFile()
+    cf.to_file(exists)
+
+    assert lc(exists) == cf

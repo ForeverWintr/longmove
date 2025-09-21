@@ -14,7 +14,7 @@ def main() -> None:
     pass
 
 
-@main.command(name="init", help="Initialize a new longmove config file")
+@main.command(name="configure", help="Create or update a longmove config file")
 @click.option(
     "--server",
     help="The remote server url",
@@ -24,22 +24,33 @@ def main() -> None:
     help="The root directory on the server in which to store offloaded files",
 )
 @click.option(
-    "--force",
-    is_flag=True,
-    help="Overwrite an existing config file",
+    "--config-file",
+    type=util.LocalPath(),
+    default=CONFIG_PATH,
+    help="Path to a config file to use",
 )
-def init(server: str | None, remote_root: str | None, force: bool) -> None:
-    if not force and CONFIG_PATH.exists():
-        raise click.BadOptionUsage(
-            "--force", f"{CONFIG_PATH} already exists. Pass --force to overwrite."
-        )
+def configure(
+    server: str | None,
+    remote_root: str | None,
+    config_file: Path,
+) -> None:
+    try:
+        cf = ConfigFile.from_file(config_file)
+    except FileNotFoundError:
+        cf = ConfigFile()
 
     if server is None:
-        server = click.prompt(text="Please enter a server URL")
+        server = click.prompt(
+            text="Please enter a server URL",
+            show_default=True,
+            default=cf.remote_name,
+        )
 
     if remote_root is None:
         remote_root = click.prompt(
-            text="Please specify the absolute path to a directory to use for storage on the server"
+            text="Please specify the server directory to use",
+            show_default=True,
+            default=cf.remote_root,
         )
     c = ConfigFile(remote_name=server, remote_root=remote_root)
     c.to_file(CONFIG_PATH)
@@ -48,8 +59,16 @@ def init(server: str | None, remote_root: str | None, force: bool) -> None:
 
 @main.command("register", help="Register a file to be offloaded.")
 @click.argument("path", type=util.LocalPath())
-def register(path: Path) -> None:
+@click.option(
+    "--config-file",
+    type=util.LongmoveConfig(),
+    default=CONFIG_PATH,
+    help="Path to a config file to use",
+    show_default=True,
+)
+def register(path: Path, config_file: ConfigFile) -> None:
     print(path)
+    print(config_file)
 
 
 if __name__ == "__main__":
