@@ -6,6 +6,7 @@ import click
 
 
 from longmove.config_file import ConfigFile, CONFIG_PATH
+from longmove import util
 
 
 
@@ -46,7 +47,7 @@ def init(server: str | None, remote_root: str | None, force: bool):
     click.echo(f"Wrote config file at {CONFIG_PATH}")
 
 @main.command('register', help='Register a file to be offloaded.')
-@click.argument('file', type=click.File)
+@click.argument('file', type=util.LocalPath)
 
 
 if __name__ == "__main__":
