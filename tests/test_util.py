@@ -9,10 +9,8 @@ from longmove import util
 def test_localpath(tmp_path: Path) -> None:
     r = util.LocalPath()
 
-    # relative paths not allowed
-    with pytest.MonkeyPatch.context() as m:
-        m.setenv(name="PWD", value=str(tmp_path))
-        p = r(".")
+    # Needs to be updated if supporting non macos.
+    assert r("~/..") == Path("/Users")
 
     # convert existing path is noop.
     assert tmp_path == r(tmp_path)
@@ -20,3 +18,9 @@ def test_localpath(tmp_path: Path) -> None:
 
     with pytest.raises(click.BadParameter):
         r(tmp_path / "doesntexist")
+
+    # relative paths not allowed
+    with pytest.MonkeyPatch.context() as m:
+        m.setenv(name="PWD", value=str(tmp_path))
+        p = r(".")
+        assert p == tmp_path
