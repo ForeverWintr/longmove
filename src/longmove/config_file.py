@@ -11,6 +11,7 @@ CONFIG_PATH = Path("~/.longmove.toml").expanduser()
 @dataclasses.dataclass(frozen=True)
 class ConfigFile:
     remote_name: str
+    remote_root: str
     path_map: tuple[tuple[Path, Path]] = ()
 
     @classmethod
