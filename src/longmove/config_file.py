@@ -1,11 +1,18 @@
 import typing as tp
-
 import dataclasses
 from pathlib import Path
+from importlib import metadata
+import functools
 
 import tomlkit
+import platformdirs
 
-CONFIG_PATH = Path("~/.longmove.toml").expanduser()
+
+@functools.cache
+def get_default_config_path() -> Path:
+    dist = metadata.distribution("longmove")
+    base = platformdirs.site_cache_path(appname=dist.name, version=dist.version)
+    return base / "longmove.toml"
 
 
 @dataclasses.dataclass(frozen=True)

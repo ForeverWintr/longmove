@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 
-from longmove.config_file import ConfigFile, CONFIG_PATH
+from longmove.config_file import ConfigFile, get_default_config_path
 from longmove import util
 
 
@@ -26,7 +26,8 @@ def main() -> None:
 @click.option(
     "--config-file",
     type=util.LocalPath(),
-    default=CONFIG_PATH,
+    default=get_default_config_path(),
+    show_default=True,
     help="Path to a config file to use",
 )
 def configure(
@@ -53,8 +54,8 @@ def configure(
             default=cf.remote_root,
         )
     c = ConfigFile(remote_name=server, remote_root=remote_root)
-    c.to_file(CONFIG_PATH)
-    click.echo(f"Wrote config file at {CONFIG_PATH}")
+    c.to_file(config_file)
+    click.echo(f"Wrote config file at {config_file}")
 
 
 @main.command("register", help="Register a file to be offloaded.")
@@ -62,7 +63,7 @@ def configure(
 @click.option(
     "--config-file",
     type=util.LongmoveConfig(),
-    default=CONFIG_PATH,
+    default=get_default_config_path(),
     help="Path to a config file to use",
     show_default=True,
 )
