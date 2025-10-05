@@ -11,7 +11,7 @@ import platformdirs
 @functools.cache
 def get_default_config_path() -> Path:
     dist = metadata.distribution("longmove")
-    base = platformdirs.site_cache_path(appname=dist.name, version=dist.version)
+    base = platformdirs.site_config_path(appname=dist.name)
     return base / "longmove.toml"
 
 
