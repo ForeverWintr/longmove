@@ -42,3 +42,10 @@ class ConfigFile:
 
     def to_file(self) -> None:
         self.config_location.write_text(self.to_toml())
+
+    def register(self, fp: Path) -> Path:
+        """Add the given fp to the list of files to offload to remote. Return the
+        relative path to the remote file, from `remote_root`"""
+        relative_path = fp.relative_to(fp.root)
+        self.path_map.append((fp, relative_path))
+        return relative_path

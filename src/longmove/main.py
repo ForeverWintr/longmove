@@ -70,8 +70,11 @@ def configure(
     envvar=constants.CONFIG_ENV_VAR,
 )
 def register(path: Path, config_file: ConfigFile) -> None:
-    print(path)
-    print(config_file)
+    remote = config_file.register(path)
+    config_file.to_file()
+
+    click.echo(f"Registered {path.name} to:")
+    click.echo(f"remote:{remote}")
 
 
 if __name__ == "__main__":
