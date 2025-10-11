@@ -37,4 +37,4 @@ class ConfigFile:
         return tomlkit.dumps(d)
 
     def to_file(self, f: Path) -> None:
-        return f.write_text(self.to_toml())
+        f.write_text(self.to_toml())

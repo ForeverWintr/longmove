@@ -7,14 +7,15 @@ import click
 
 from longmove.config_file import ConfigFile, get_default_config_path
 from longmove import util
+from longmove import constants
 
 
 @click.group()
-def main() -> None:
+def cli() -> None:
     pass
 
 
-@main.command(name="configure", help="Create or update a longmove config file")
+@cli.command(name="configure", help="Create or update a longmove config file")
 @click.option(
     "--server",
     help="The remote server url",
@@ -58,7 +59,7 @@ def configure(
     click.echo(f"Wrote config file at {config_file}")
 
 
-@main.command("register", help="Register a file to be offloaded.")
+@cli.command("register", help="Register a file to be offloaded.")
 @click.argument("path", type=util.LocalPath())
 @click.option(
     "--config-file",
@@ -66,6 +67,7 @@ def configure(
     default=get_default_config_path(),
     help="Path to a config file to use",
     show_default=True,
+    envvar=constants.CONFIG_ENV_VAR,
 )
 def register(path: Path, config_file: ConfigFile) -> None:
     print(path)
@@ -73,4 +75,4 @@ def register(path: Path, config_file: ConfigFile) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    cli()
