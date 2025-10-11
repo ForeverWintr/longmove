@@ -16,4 +16,4 @@ def test_register(tmp_path: Path, basic_config: Path) -> None:
 
     result = runner.invoke(main.cli, args.split())
 
-    assert 0
+    assert result.exit_code == 0
