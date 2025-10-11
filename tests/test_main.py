@@ -7,7 +7,7 @@ from click.testing import CliRunner
 from longmove import main
 
 
-def test_register(tmp_path: Path, basic_config_env: None) -> None:
+def test_register(tmp_path: Path, basic_config: Path) -> None:
     runner = CliRunner()
 
     file = tmp_path / "test.txt"
