@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-lm = "longmove.main:main"
+lm = "longmove.main:cli"
 
 [build-system]
 requires = ["hatchling"]

@@ -26,10 +26,11 @@ def cli() -> None:
 )
 @click.option(
     "--config-file",
-    type=util.LocalPath(),
+    type=Path,
     default=get_default_config_path(),
     show_default=True,
     help="Path to a config file to use",
+    envvar=constants.CONFIG_ENV_VAR,
 )
 def configure(
     server: str | None,
@@ -54,8 +55,12 @@ def configure(
             show_default=True,
             default=cf.remote_root,
         )
-    c = ConfigFile(remote_name=server, remote_root=remote_root)
-    c.to_file(config_file)
+    c = ConfigFile(
+        config_location=config_file,
+        remote_name=server,
+        remote_root=remote_root,
+    )
+    c.to_file()
     click.echo(f"Wrote config file at {config_file}")
 
 
