@@ -34,7 +34,7 @@ def test_configfile(tmp_path: Path) -> None:
         lc(tmp_path / "doesntexist")
 
     exists = tmp_path / "config.toml"
-    cf = ConfigFile()
-    cf.to_file(exists)
+    cf = ConfigFile(exists)
+    cf.to_file()
 
     assert lc(exists) == cf

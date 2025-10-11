@@ -8,10 +8,10 @@ def test_to_from_toml(tmp_path: Path) -> None:
     c = config_file.ConfigFile(
         remote_name="remote.server",
         remote_root="/offload",
-        path_map=(
-            (Path("/tmp/foo"), Path("/server/offload/foo")),
-            (Path("/tmp/foo2"), Path("/server/offload/foo2")),
-        ),
+        path_map=[
+            (Path("/tmp/foo"), Path("foo")),
+            (Path("/tmp/foo2"), Path("foo2")),
+        ],
         config_location=out,
     )
 

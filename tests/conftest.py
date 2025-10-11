@@ -13,7 +13,7 @@ def basic_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     methods use it automatically."""
 
     fp = tmp_path / "longmove.toml"
-    c = ConfigFile()
-    c.to_file(fp)
+    c = ConfigFile(config_location=fp)
+    c.to_file()
     monkeypatch.setenv(constants.CONFIG_ENV_VAR, fp)
     return fp

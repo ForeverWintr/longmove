@@ -34,4 +34,4 @@ class LongmoveConfig(click.ParamType):
 
             raise click.BadParameter(
                 f"No config file found at {value}. To create one, run {configure.name}"
-            )
+            ) from e
