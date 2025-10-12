@@ -2,6 +2,7 @@ import contextlib
 from pathlib import Path
 
 import pytest
+import trio
 
 from longmove.config_file import ConfigFile
 from longmove import constants
@@ -17,3 +18,18 @@ def basic_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     c.to_file()
     monkeypatch.setenv(constants.CONFIG_ENV_VAR, fp)
     return fp
+
+
+@pytest.fixture
+async def trio_path(tmp_path: Path) -> trio.Path:
+    return trio.Path(tmp_path)
+
+
+@pytest.fixture
+def source_files(tmp_path: Path) -> Path:
+    root = tmp_path / "root"
+    root.mkdir()
+    for char in "abcd":
+        f = root / char
+        f.write_text(char * 100)
+    return root

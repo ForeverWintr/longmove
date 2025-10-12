@@ -20,7 +20,7 @@ def test_register(tmp_path: Path, basic_config: Path) -> None:
     assert result.exit_code == 0
 
 
-def test_cli(basic_config: Path) -> None:
+def test_configure(basic_config: Path) -> None:
     runner = CliRunner()
     result = runner.invoke(main.cli, ["configure"], input="name\nroot")
     assert result.exit_code == 0
@@ -38,3 +38,10 @@ def test_cli(basic_config: Path) -> None:
     conf = ConfigFile.from_file(basic_config)
     assert conf.remote_name == "name"
     assert conf.remote_root == "root"
+
+
+def test_offload(tmp_path: Path, source_files: Path, basic_config: ConfigFile) -> None:
+    runner = CliRunner()
+    result = runner.invoke(main.cli, ["offload"])
+
+    assert 0

@@ -15,7 +15,17 @@ def cli() -> None:
     pass
 
 
-@cli.command(name="configure")
+config_option = click.option(
+    "--config-file",
+    type=util.LongmoveConfig(),
+    default=get_default_config_path(),
+    help="Path to a config file to use",
+    show_default=True,
+    envvar=constants.CONFIG_ENV_VAR,
+)
+
+
+@cli.command()
 @click.option(
     "--server",
     help="The remote server url",
@@ -65,16 +75,9 @@ def configure(
     click.echo(f"Wrote config file at {config_file}")
 
 
-@cli.command("register")
+@cli.command()
 @click.argument("path", type=util.LocalPath())
-@click.option(
-    "--config-file",
-    type=util.LongmoveConfig(),
-    default=get_default_config_path(),
-    help="Path to a config file to use",
-    show_default=True,
-    envvar=constants.CONFIG_ENV_VAR,
-)
+@config_option
 def register(path: Path, config_file: ConfigFile) -> None:
     """Register a file to be offloaded."""
     remote = config_file.register(path)
@@ -82,6 +85,13 @@ def register(path: Path, config_file: ConfigFile) -> None:
 
     click.echo(f"Registered {path.name} to:")
     click.echo(f"remote:{remote}")
+
+
+@cli.command()
+@config_option
+def offload(config_file: ConfigFile) -> None:
+    """Transfer tracked files to remote"""
+    asdf
 
 
 if __name__ == "__main__":
