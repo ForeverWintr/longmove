@@ -9,7 +9,7 @@ from longmove import constants
 
 
 @pytest.fixture
-def basic_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+def basic_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ConfigFile:
     """Creates a basic config file, and both returns it and sets it in ENV so that cli
     methods use it automatically."""
 
@@ -17,7 +17,7 @@ def basic_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     c = ConfigFile(config_location=fp)
     c.to_file()
     monkeypatch.setenv(constants.CONFIG_ENV_VAR, fp)
-    return fp
+    return c
 
 
 @pytest.fixture
@@ -30,6 +30,6 @@ def source_files(tmp_path: Path) -> Path:
     root = tmp_path / "root"
     root.mkdir()
     for char in "abcd":
-        f = root / char
+        f = root / f"{char}.txt"
         f.write_text(char * 100)
     return root
