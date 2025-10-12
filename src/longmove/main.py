@@ -15,7 +15,7 @@ def cli() -> None:
     pass
 
 
-@cli.command(name="configure", help="Create or update a longmove config file")
+@cli.command(name="configure")
 @click.option(
     "--server",
     help="The remote server url",
@@ -37,6 +37,7 @@ def configure(
     remote_root: str | None,
     config_file: Path,
 ) -> None:
+    """Create or update a longmove config file"""
     try:
         cf = ConfigFile.from_file(config_file)
     except FileNotFoundError:
@@ -64,7 +65,7 @@ def configure(
     click.echo(f"Wrote config file at {config_file}")
 
 
-@cli.command("register", help="Register a file to be offloaded.")
+@cli.command("register")
 @click.argument("path", type=util.LocalPath())
 @click.option(
     "--config-file",
@@ -75,6 +76,7 @@ def configure(
     envvar=constants.CONFIG_ENV_VAR,
 )
 def register(path: Path, config_file: ConfigFile) -> None:
+    """Register a file to be offloaded."""
     remote = config_file.register(path)
     config_file.to_file()
 
