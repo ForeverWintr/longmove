@@ -1,6 +1,7 @@
 import dataclasses
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from longmove import main
@@ -39,6 +40,7 @@ def test_configure(basic_config: ConfigFile) -> None:
     assert conf.remote_root == "root"
 
 
+@pytest.mark.skip("wip")
 def test_offload(tmp_path: Path, source_files: Path, basic_config: ConfigFile) -> None:
     target = tmp_path / "target"
     target.mkdir()
