@@ -1,7 +1,7 @@
 from pathlib import Path
 
-import pytest
 import click
+import pytest
 
 from longmove import util
 from longmove.config_file import ConfigFile

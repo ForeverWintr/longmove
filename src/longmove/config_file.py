@@ -1,12 +1,12 @@
-import typing as tp
 import dataclasses
-from dataclasses import field
-from pathlib import Path
-from importlib import metadata
 import functools
+import typing as tp
+from dataclasses import field
+from importlib import metadata
+from pathlib import Path
 
-import tomlkit
 import platformdirs
+import tomlkit
 
 
 @functools.cache
