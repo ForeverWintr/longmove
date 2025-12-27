@@ -22,6 +22,6 @@ async def rsync_copy(src: str, target: str):
     )
     async with trio.open_nursery() as nursery:
         p = await nursery.start(runner)
-        stderr = await p.stderr.receive_some()
+        await p.stderr.receive_some()
         stdout = await p.stdout.receive_some()
         return stdout

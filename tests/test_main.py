@@ -1,8 +1,6 @@
 import dataclasses
 from pathlib import Path
 
-import click
-import pytest
 from click.testing import CliRunner
 
 from longmove import main
@@ -50,6 +48,6 @@ def test_offload(tmp_path: Path, source_files: Path, basic_config: ConfigFile) -
         conf.register(f)
 
     runner = CliRunner()
-    result = runner.invoke(main.cli, ["offload"])
+    runner.invoke(main.cli, ["offload"])
 
     assert 0

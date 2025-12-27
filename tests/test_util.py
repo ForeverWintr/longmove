@@ -30,7 +30,7 @@ def test_localpath(tmp_path: Path) -> None:
 def test_configfile(tmp_path: Path) -> None:
     lc = util.LongmoveConfig()
 
-    with pytest.raises(click.BadParameter) as e:
+    with pytest.raises(click.BadParameter):
         lc(tmp_path / "doesntexist")
 
     exists = tmp_path / "config.toml"
