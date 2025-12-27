@@ -91,7 +91,7 @@ def register(path: Path, config_file: ConfigFile) -> None:
 @config_option
 def offload(config_file: ConfigFile) -> None:
     """Transfer tracked files to remote"""
-    asdf
+    raise NotImplementedError("WIP")
 
 
 if __name__ == "__main__":

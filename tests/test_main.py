@@ -1,4 +1,5 @@
 from pathlib import Path
+import dataclasses
 
 import pytest
 import click
@@ -43,6 +44,10 @@ def test_configure(basic_config: ConfigFile) -> None:
 def test_offload(tmp_path: Path, source_files: Path, basic_config: ConfigFile) -> None:
     target = tmp_path / "target"
     target.mkdir()
+
+    conf = dataclasses.replace(basic_config, remote_root=str(target))
+    for f in source_files.iterdir():
+        conf.register(f)
 
     runner = CliRunner()
     result = runner.invoke(main.cli, ["offload"])
