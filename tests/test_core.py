@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 import trio
 
 from longmove import core
@@ -11,11 +10,11 @@ async def test_rsync_copy(trio_path: trio.Path, source_files: Path):
     source_files = trio.Path(source_files)
 
     assert not await tgt.exists()
-    r = await core.rsync_copy(source_files, tgt)
+    await core.rsync_copy(source_files, tgt)
 
     assert await tgt.exists()
     for f in await source_files.iterdir():
-        ft = tgt / f.name
+        tgt / f.name
 
         fs = await f.stat()
         fts = await f.stat()

@@ -1,13 +1,9 @@
-import typing as tp
-
 from pathlib import Path
 
 import click
 
-
+from longmove import constants, util
 from longmove.config_file import ConfigFile, get_default_config_path
-from longmove import util
-from longmove import constants
 
 
 @click.group()

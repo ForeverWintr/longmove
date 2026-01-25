@@ -1,7 +1,7 @@
 from pathlib import Path
 
-import pytest
 import click
+import pytest
 
 from longmove import util
 from longmove.config_file import ConfigFile
@@ -10,8 +10,8 @@ from longmove.config_file import ConfigFile
 def test_localpath(tmp_path: Path) -> None:
     r = util.LocalPath()
 
-    # Needs to be updated if supporting non macos.
-    assert r("~/..") == Path("/Users")
+    home = r("~/..").name.casefold()
+    assert "user" in home or "home" in home
 
     # convert existing path is noop.
     assert tmp_path == r(tmp_path)
@@ -30,7 +30,7 @@ def test_localpath(tmp_path: Path) -> None:
 def test_configfile(tmp_path: Path) -> None:
     lc = util.LongmoveConfig()
 
-    with pytest.raises(click.BadParameter) as e:
+    with pytest.raises(click.BadParameter):
         lc(tmp_path / "doesntexist")
 
     exists = tmp_path / "config.toml"

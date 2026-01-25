@@ -26,6 +26,7 @@ dev = [
     "pytest>=8.4.1",
     "pytest-trio>=0.8.0",
     "ruff>=0.12.4",
+    "pytest-cov (>=7.0.0,<8.0.0)",
 ]
 
 [tool.pytest.ini_options]

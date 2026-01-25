@@ -1,11 +1,10 @@
-import contextlib
 from pathlib import Path
 
 import pytest
 import trio
 
-from longmove.config_file import ConfigFile
 from longmove import constants
+from longmove.config_file import ConfigFile
 
 
 @pytest.fixture
