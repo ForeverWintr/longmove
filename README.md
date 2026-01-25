@@ -28,4 +28,3 @@ uv run lm
 # Run tests
 uv run pytest
 ```
->>>>>>> @{-1}
