@@ -15,5 +15,5 @@ proj.launch-config = {loc('src/longmove/main.py'): ('project',
         ('init',
          ''))}
 testing.auto-test-file-specs = (('glob',
-                                 'test_*'),)
+                                 'test_*.py'),)
 testing.test-framework = {None: ':internal pytest'}
