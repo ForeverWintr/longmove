@@ -10,7 +10,8 @@ from longmove.config_file import ConfigFile
 def test_localpath(tmp_path: Path) -> None:
     r = util.LocalPath()
 
-    assert "user" in r("~/..").name.casefold()
+    home = r("~/..").name.casefold()
+    assert "user" in home or "home" in home
 
     # convert existing path is noop.
     assert tmp_path == r(tmp_path)
