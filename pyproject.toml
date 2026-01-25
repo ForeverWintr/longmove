@@ -31,3 +31,6 @@ dev = [
 
 [tool.pytest.ini_options]
 trio_mode = true
+
+[tool.ruff.lint.isort]
+force-single-line = true

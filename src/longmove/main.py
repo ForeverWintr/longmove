@@ -2,8 +2,11 @@ from pathlib import Path
 
 import click
 
-from longmove import constants, util
-from longmove.config_file import ConfigFile, get_default_config_path
+from longmove import constants
+from longmove import core
+from longmove import util
+from longmove.config_file import ConfigFile
+from longmove.config_file import get_default_config_path
 
 
 @click.group()
@@ -88,6 +91,13 @@ def register(path: Path, config_file: ConfigFile) -> None:
 def offload(config_file: ConfigFile) -> None:
     """Transfer tracked files to remote"""
     raise NotImplementedError("WIP")
+
+
+@cli.command()
+@click.argument("source", type=util.LocalPath())
+def send(source: Path, destination: str) -> None:
+    """Send the specified local file to the specified destination"""
+    core.rsync_copy
 
 
 if __name__ == "__main__":
