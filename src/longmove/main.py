@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import click
+import trio
 
 from longmove import constants
 from longmove import core
@@ -94,10 +95,17 @@ def offload(config_file: ConfigFile) -> None:
 
 
 @cli.command()
-@click.argument("source", type=util.LocalPath())
-def send(source: Path, destination: str) -> None:
-    """Send the specified local file to the specified destination"""
-    core.rsync_copy
+@click.argument(
+    "source",
+    type=click.Path(exists=True, readable=True, resolve_path=True, path_type=Path),
+)
+@click.argument("dest")
+def send(source: Path, dest: str) -> None:
+    """Send the specified local file SOURCE to the specified destination DEST. DEST is a
+    remote destination, e.g: username@server:/path/to/dir/
+    """
+    print(source)
+    trio.run(core.rsync_copy(source, dest))
 
 
 if __name__ == "__main__":
