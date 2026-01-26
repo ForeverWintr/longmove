@@ -105,7 +105,7 @@ def send(source: Path, dest: str) -> None:
     remote destination, e.g: username@server:/path/to/dir/
     """
     print(source)
-    r = trio.run(core.rsync_copy, source, dest)
+    r = trio.run(core.rsync_copy, str(source), dest)
     print(r)
 
 
