@@ -30,11 +30,14 @@ async def rsync_copy(src: str, target: str):
         # https://trio.readthedocs.io/en/stable/reference-io.html#trio.Process
         p = await nursery.start(runner)
 
-        while p.returncode is None:
-            stderr = await p.stderr.receive_some()
-            stdout = await p.stdout.receive_some()
-            print("Stderr:")
-            print(stderr)
+        stdout = []
+        async for bytes_ in p.stdout:
+            stdout.append(bytes_.decode())
             print("Stdout:")
-            print(stdout)
-        return stdout
+            print(bytes_)
+
+        await p.wait()
+        stderr = await p.stderr.receive_some()
+        print("Stderr:")
+        print(stderr)
+        return "".join(stdout)

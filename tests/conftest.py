@@ -32,3 +32,13 @@ def source_files(tmp_path: Path) -> Path:
         f = root / f"{char}.txt"
         f.write_text(char * 100)
     return root
+
+
+@pytest.fixture
+def source_files_big(tmp_path: Path) -> Path:
+    root = tmp_path / "root"
+    root.mkdir()
+    for char in "abcd":
+        f = root / f"{char}.txt"
+        f.write_text(char * 1_000_000)
+    return root

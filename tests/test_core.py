@@ -10,7 +10,7 @@ async def test_rsync_copy(trio_path: trio.Path, source_files: Path):
     source_files = trio.Path(source_files)
 
     assert not await tgt.exists()
-    await core.rsync_copy(source_files, tgt)
+    await core.rsync_copy(str(source_files), str(tgt))
 
     assert await tgt.exists()
     for f in await source_files.iterdir():
