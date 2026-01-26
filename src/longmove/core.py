@@ -10,7 +10,8 @@ async def rsync_copy(src: str, target: str):
         command=[
             "rsync",
             "--archive",
-            "--progress",
+            # "--progress",
+            "--info=progress2",
             "--compress",
             "--itemize-changes",
             "--partial",
@@ -22,6 +23,7 @@ async def rsync_copy(src: str, target: str):
     )
     async with trio.open_nursery() as nursery:
         p = await nursery.start(runner)
-        await p.stderr.receive_some()
+        stderr = await p.stderr.receive_some()
         stdout = await p.stdout.receive_some()
+        print(stderr)
         return stdout
