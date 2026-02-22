@@ -4,7 +4,6 @@ import re
 import subprocess
 import typing as tp
 from dataclasses import dataclass
-from pathlib import Path
 
 import trio
 
@@ -97,7 +96,7 @@ class Progress:
         )
 
 
-async def rsync_copy(src: str, target: str):
+async def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
     command = [
         "rsync",
         "--archive",
@@ -110,8 +109,8 @@ async def rsync_copy(src: str, target: str):
         target,
     ]
 
-    print("Running Command")
-    print(" ".join(command))
+    log.debug("Running Command")
+    log.debug(" ".join(command))
 
     runner = functools.partial(
         trio.run_process,
@@ -124,13 +123,25 @@ async def rsync_copy(src: str, target: str):
         p = await nursery.start(runner)
 
         stdout = []
+        accum = []
         async for bytes_ in p.stdout:
-            stdout.append(bytes_.decode())
-            yield bytes_
+            for char in bytes_.decode():
+                accum.append(char)
+                if char == "\r" and len(accum) > 1:
+                    line = "".join(accum)
+                    stdout.append(line)
+                    accum = []
+                    yield Progress.from_rsync_line(line)
 
         await p.wait()
         stderr = await p.stderr.receive_some()
-        print("Stderr:")
-        print(stderr)
-        Path(f"/tmp/longmove_{Path(src).name}.txt").write_text("".join(stdout))
-        # return "".join(stdout)
+        log.debug("Stderr:")
+        log.debug(stderr)
+        log.debug("Stdout:")
+        log.debug("".join(stdout))
+
+
+async def send(src: str, target: str) -> None:
+    """Send src to target"""
+
+    raise NotImplementedError("WIP")
