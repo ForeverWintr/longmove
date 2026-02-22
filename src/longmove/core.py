@@ -1,5 +1,6 @@
 import functools
 import subprocess
+from pathlib import Path
 
 import trio
 
@@ -11,7 +12,7 @@ async def rsync_copy(src: str, target: str):
         # "--progress",
         "--info=progress2",
         "--compress",
-        "--itemize-changes",
+        # "--itemize-changes",
         "--partial",
         src,
         target,
@@ -40,4 +41,5 @@ async def rsync_copy(src: str, target: str):
         stderr = await p.stderr.receive_some()
         print("Stderr:")
         print(stderr)
+        Path(f"/tmp/longmove_{Path(src).name}.txt").write_text("".join(stdout))
         return "".join(stdout)
