@@ -14,13 +14,25 @@ class Progress:
     pct: float
     speed: str
     time_remaining: str
-    transfer_num: int | None = None
-    to_send: int | None = None
-    total: int | None = None
+    transfer_num: int | None
+    to_send: int | None
+    total: int | None
     total_known: bool
-    _PROGRESS_PATTERN: tp.ClassVar[re.Pattern[str]] = re.compile(
-        r"^\(\s*xfr#(?P<transfer>\d+)\s*,\s*(?P<check_kind>to-chk|ir-chk)\s*=\s*"
-        r"(?P<to_send>\d+)\s*/\s*(?P<total>\d+)\s*\)$"
+    _LINE_PATTERN: tp.ClassVar[re.Pattern[str]] = re.compile(
+        r"""
+        ^\s*
+        (?P<bytes>[\d,]+)\s+
+        (?P<pct>\d+)%\s+
+        (?P<speed>\S+)\s+
+        (?P<time_remaining>\S+)
+        (?:\s+
+            \(\s*xfr\#(?P<transfer>\d+)\s*,\s*
+            (?P<check_kind>to-chk|ir-chk)\s*=\s*
+            (?P<to_send>\d+)\s*/\s*(?P<total>\d+)\s*\)
+        )?
+        \s*$
+        """,
+        re.VERBOSE,
     )
 
     @classmethod
@@ -53,30 +65,28 @@ class Progress:
             the count of files left to check will increase by the number of the files
             added to the list).
         """
-        parts = line.split(maxsplit=4)
-        if len(parts) < 4:
+        match = cls._LINE_PATTERN.match(line)
+        if match is None:
             raise ValueError(f"Invalid rsync progress line: {line!r}")
-        bytes_, pct, speed, time_remaining, *progress = parts
-        transfer_num = None
+
+        transfer = match.group("transfer")
+
+        total_known = False
         to_send = None
         total = None
-        total_known = False
-
-        if progress:
-            extra = progress[0].strip()
-            match = cls._PROGRESS_PATTERN.match(extra)
-            if match is None:
-                raise ValueError(f"Invalid rsync progress suffix: {extra!r}")
-            transfer_num = int(match.group("transfer"))
+        transfer_num = None
+        if transfer:
+            # The transfer section is not always printed.
+            transfer_num = int(transfer)
+            total_known = match.group("check_kind") == "to-chk"
             to_send = int(match.group("to_send"))
             total = int(match.group("total"))
-            total_known = match.group("check_kind") == "to-chk"
 
         return cls(
-            bytes_=int(bytes_.replace(",", "")),
-            pct=int(pct[:-1]),
-            speed=speed,
-            time_remaining=time_remaining,
+            bytes_=int(match.group("bytes").replace(",", "")),
+            pct=int(match.group("pct")),
+            speed=match.group("speed"),
+            time_remaining=match.group("time_remaining"),
             transfer_num=transfer_num,
             to_send=to_send,
             total=total,
