@@ -1,4 +1,5 @@
 import functools
+import re
 import subprocess
 import typing as tp
 from dataclasses import dataclass
@@ -17,6 +18,10 @@ class Progress:
     to_send: int | None = None
     total: int | None = None
     total_known: bool
+    _PROGRESS_PATTERN: tp.ClassVar[re.Pattern[str]] = re.compile(
+        r"^xfr#(?P<transfer>\d+),\s*(?P<check_kind>to-chk|ir-chk)="
+        r"(?P<to_send>\d+)/(?P<total>\d+)$"
+    )
 
     @classmethod
     def from_rsync_line(cls, line: str) -> tp.Self:
@@ -49,22 +54,35 @@ class Progress:
             added to the list).
 
         """
-        parts = line.split()
+        parts = line.split(maxsplit=4)
+        if len(parts) < 4:
+            raise ValueError(f"Invalid rsync progress line: {line!r}")
         bytes_, pct, speed, time_remaining, *progress = parts
-        # transfer_num = None
-        # to_send = None
-        # total = None
+        transfer_num = None
+        to_send = None
+        total = None
+        total_known = False
         if progress:
-            assert len(progress) == 1
-
-            raise NotImplementedError("WIP")
+            extra = progress[0].strip()
+            if not (extra.startswith("(") and extra.endswith(")")):
+                raise ValueError(f"Invalid rsync progress suffix: {extra!r}")
+            match = cls._PROGRESS_PATTERN.match(extra[1:-1])
+            if match is None:
+                raise ValueError(f"Invalid rsync progress suffix: {extra!r}")
+            transfer_num = int(match.group("transfer"))
+            to_send = int(match.group("to_send"))
+            total = int(match.group("total"))
+            total_known = match.group("check_kind") == "to-chk"
 
         return cls(
-            bytes_=int(bytes_.strip(",")),
+            bytes_=int(bytes_.replace(",", "")),
             pct=int(pct[:-1]),
             speed=speed,
             time_remaining=time_remaining,
-            total_known=False,
+            transfer_num=transfer_num,
+            to_send=to_send,
+            total=total,
+            total_known=total_known,
         )
 
 

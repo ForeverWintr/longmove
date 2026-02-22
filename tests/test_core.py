@@ -47,8 +47,8 @@ def test_progress_from_rsync_line():
             total_known=True,
         ),
         "200  50%   97.66kB/s    0:00:00 (xfr#2, to-chk=2/5)": P(
-            bytes_=100,
-            pct=25,
+            bytes_=200,
+            pct=50,
             speed="97.66kB/s",
             time_remaining="0:00:00",
             transfer_num=2,
