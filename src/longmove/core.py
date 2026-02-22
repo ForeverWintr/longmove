@@ -1,4 +1,5 @@
 import functools
+import logging
 import re
 import subprocess
 import typing as tp
@@ -6,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import trio
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
