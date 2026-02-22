@@ -19,8 +19,8 @@ class Progress:
     total: int | None = None
     total_known: bool
     _PROGRESS_PATTERN: tp.ClassVar[re.Pattern[str]] = re.compile(
-        r"^xfr#(?P<transfer>\d+),\s*(?P<check_kind>to-chk|ir-chk)="
-        r"(?P<to_send>\d+)/(?P<total>\d+)$"
+        r"^\(\s*xfr#(?P<transfer>\d+)\s*,\s*(?P<check_kind>to-chk|ir-chk)\s*=\s*"
+        r"(?P<to_send>\d+)\s*/\s*(?P<total>\d+)\s*\)$"
     )
 
     @classmethod
@@ -52,7 +52,6 @@ class Progress:
             of files in the file list is still going to increase (and each time it does,
             the count of files left to check will increase by the number of the files
             added to the list).
-
         """
         parts = line.split(maxsplit=4)
         if len(parts) < 4:
@@ -62,11 +61,10 @@ class Progress:
         to_send = None
         total = None
         total_known = False
+
         if progress:
             extra = progress[0].strip()
-            if not (extra.startswith("(") and extra.endswith(")")):
-                raise ValueError(f"Invalid rsync progress suffix: {extra!r}")
-            match = cls._PROGRESS_PATTERN.match(extra[1:-1])
+            match = cls._PROGRESS_PATTERN.match(extra)
             if match is None:
                 raise ValueError(f"Invalid rsync progress suffix: {extra!r}")
             transfer_num = int(match.group("transfer"))
