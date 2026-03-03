@@ -109,11 +109,12 @@ def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
     log.debug("Running Command")
     log.debug(" ".join(command))
 
-    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(command, stdout=subprocess.PIPE)
 
     stdout = []
     accum = []
-    for bytes_ in p.stdout:
+    for bytes_ in p.stdout.readline:
+        assert p.poll() is None
         for char in bytes_.decode():
             accum.append(char)
             if char == "\r" and len(accum) > 1:
@@ -128,9 +129,3 @@ def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
     log.debug(stderr)
     log.debug("Stdout:")
     log.debug("".join(stdout))
-
-
-def send(src: str, target: str) -> None:
-    """Send src to target"""
-
-    raise NotImplementedError("WIP")
