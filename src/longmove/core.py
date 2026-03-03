@@ -1,11 +1,8 @@
-import functools
 import logging
 import re
 import subprocess
 import typing as tp
 from dataclasses import dataclass
-
-import trio
 
 log = logging.getLogger(__name__)
 
@@ -96,7 +93,7 @@ class Progress:
         )
 
 
-async def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
+def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
     command = [
         "rsync",
         "--archive",
@@ -112,36 +109,28 @@ async def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
     log.debug("Running Command")
     log.debug(" ".join(command))
 
-    runner = functools.partial(
-        trio.run_process,
-        command=command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    async with trio.open_nursery() as nursery:
-        # https://trio.readthedocs.io/en/stable/reference-io.html#trio.Process
-        p = await nursery.start(runner)
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        stdout = []
-        accum = []
-        async for bytes_ in p.stdout:
-            for char in bytes_.decode():
-                accum.append(char)
-                if char == "\r" and len(accum) > 1:
-                    line = "".join(accum)
-                    stdout.append(line)
-                    accum = []
-                    yield Progress.from_rsync_line(line)
+    stdout = []
+    accum = []
+    for bytes_ in p.stdout:
+        for char in bytes_.decode():
+            accum.append(char)
+            if char == "\r" and len(accum) > 1:
+                line = "".join(accum)
+                stdout.append(line)
+                accum = []
+                yield Progress.from_rsync_line(line)
 
-        await p.wait()
-        stderr = await p.stderr.receive_some()
-        log.debug("Stderr:")
-        log.debug(stderr)
-        log.debug("Stdout:")
-        log.debug("".join(stdout))
+    p.wait()
+    stderr = p.stderr.read()
+    log.debug("Stderr:")
+    log.debug(stderr)
+    log.debug("Stdout:")
+    log.debug("".join(stdout))
 
 
-async def send(src: str, target: str) -> None:
+def send(src: str, target: str) -> None:
     """Send src to target"""
 
     raise NotImplementedError("WIP")

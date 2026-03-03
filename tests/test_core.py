@@ -1,24 +1,21 @@
 from pathlib import Path
 
-import trio
-
 from longmove import core
 
 
-async def test_rsync_copy(trio_path: trio.Path, source_files: Path):
-    tgt = trio_path / "target"
-    source_files = trio.Path(source_files)
+def test_rsync_copy(tmp_path: Path, source_files: Path):
+    tgt = tmp_path / "target"
 
-    assert not await tgt.exists()
-    async for out in core.rsync_copy(str(source_files), str(tgt)):
+    assert not tgt.exists()
+    for out in core.rsync_copy(str(source_files), str(tgt)):
         assert isinstance(out, core.Progress)
 
-    assert await tgt.exists()
-    for f in await source_files.iterdir():
+    assert tgt.exists()
+    for f in source_files.iterdir():
         tgt / f.name
 
-        fs = await f.stat()
-        fts = await f.stat()
+        fs = f.stat()
+        fts = f.stat()
         assert fs == fts
 
 

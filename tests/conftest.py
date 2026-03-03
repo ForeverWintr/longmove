@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-import trio
 
 from longmove import constants
 from longmove.config_file import ConfigFile
@@ -17,11 +16,6 @@ def basic_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> ConfigFile:
     c.to_file()
     monkeypatch.setenv(constants.CONFIG_ENV_VAR, fp)
     return c
-
-
-@pytest.fixture
-async def trio_path(tmp_path: Path) -> trio.Path:
-    return trio.Path(tmp_path)
 
 
 @pytest.fixture
