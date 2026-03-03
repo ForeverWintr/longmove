@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import click
-import trio
 
 from longmove import constants
 from longmove import core
@@ -104,9 +103,8 @@ def send(source: Path, dest: str) -> None:
     """Send the specified local file SOURCE to the specified destination DEST. DEST is a
     remote destination, e.g: username@server:/path/to/dir/
     """
-    print(source)
-    r = trio.run(core.rsync_copy, str(source), dest)
-    print(r)
+    for progress in core.rsync_copy(str(source), dest):
+        print(progress)
 
 
 if __name__ == "__main__":
