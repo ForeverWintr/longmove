@@ -11,7 +11,7 @@ async def test_rsync_copy(trio_path: trio.Path, source_files: Path):
 
     assert not await tgt.exists()
     async for out in core.rsync_copy(str(source_files), str(tgt)):
-        assert isinstance(out, core.Progress)
+        assert isinstance(out, core.ProgressData)
 
     assert await tgt.exists()
     for f in await source_files.iterdir():
@@ -23,7 +23,7 @@ async def test_rsync_copy(trio_path: trio.Path, source_files: Path):
 
 
 def test_progress_from_rsync_line():
-    from longmove.core import Progress as P
+    from longmove.core import ProgressData as P
 
     line_to_expected = {
         "100  25%    0.00kB/s    0:00:00": P(
@@ -71,3 +71,10 @@ def test_progress_from_rsync_line():
     for line, expected in line_to_expected.items():
         result = P.from_rsync_line(line)
         assert result == expected
+
+
+# @pytest.mark.skip
+def test_sent_with_progress(tmp_path: Path, source_files_big: Path):
+    out_dir = tmp_path / "output"
+    trio.run(core.send_with_progress, str(source_files_big), f"{out_dir}")
+    assert 0

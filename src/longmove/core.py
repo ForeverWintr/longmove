@@ -6,12 +6,13 @@ import typing as tp
 from dataclasses import dataclass
 
 import trio
+from rich import progress
 
 log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
-class Progress:
+class ProgressData:
     bytes_: int
     pct: float
     speed: str
@@ -96,7 +97,7 @@ class Progress:
         )
 
 
-async def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
+async def rsync_copy(src: str, target: str) -> tp.Iterator[ProgressData]:
     command = [
         "rsync",
         "--archive",
@@ -116,7 +117,7 @@ async def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
         trio.run_process,
         command=command,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        # stderr=subprocess.PIPE,
     )
     async with trio.open_nursery() as nursery:
         # https://trio.readthedocs.io/en/stable/reference-io.html#trio.Process
@@ -131,17 +132,24 @@ async def rsync_copy(src: str, target: str) -> tp.Iterator[Progress]:
                     line = "".join(accum)
                     stdout.append(line)
                     accum = []
-                    yield Progress.from_rsync_line(line)
+                    yield ProgressData.from_rsync_line(line)
 
         await p.wait()
-        stderr = await p.stderr.receive_some()
-        log.debug("Stderr:")
-        log.debug(stderr)
+
         log.debug("Stdout:")
         log.debug("".join(stdout))
 
 
-async def send(src: str, target: str) -> None:
+async def send_with_progress(src: str, target: str) -> None:
     """Send src to target"""
 
-    raise NotImplementedError("WIP")
+    counter = 0
+    with progress.Progress() as ui:
+        bar = ui.add_task("Sending...", total=100)
+
+        async for data in rsync_copy(src, target):
+            counter += 1
+            if counter >= 1000:
+                counter = 0
+                ui.console.log(data)
+            ui.update(bar, completed=data.pct)
