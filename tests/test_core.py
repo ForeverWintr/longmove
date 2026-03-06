@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 import trio
 
 from longmove import core
@@ -73,8 +74,12 @@ def test_progress_from_rsync_line():
         assert result == expected
 
 
-# @pytest.mark.skip
-def test_sent_with_progress(tmp_path: Path, source_files_big: Path):
+def test_sent_with_progress(
+    tmp_path: Path,
+    source_files: Path,
+    capsys: pytest.CaptureFixture,
+):
     out_dir = tmp_path / "output"
-    trio.run(core.send_with_progress, str(source_files_big), f"{out_dir}")
-    assert 0
+    trio.run(core.send_with_progress, str(source_files), f"{out_dir}")
+    out, err = capsys.readouterr()
+    assert not err
