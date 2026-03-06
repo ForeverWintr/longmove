@@ -104,9 +104,7 @@ def send(source: Path, dest: str) -> None:
     """Send the specified local file SOURCE to the specified destination DEST. DEST is a
     remote destination, e.g: username@server:/path/to/dir/
     """
-    print(source)
-    r = trio.run(core.send_with_progress, str(source), dest)
-    print(r)
+    trio.run(core.send_with_progress, str(source), dest)
 
 
 if __name__ == "__main__":
