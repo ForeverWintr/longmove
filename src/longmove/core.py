@@ -143,13 +143,23 @@ async def rsync_copy(src: str, target: str) -> tp.Iterator[ProgressData]:
 async def send_with_progress(src: str, target: str) -> None:
     """Send src to target"""
 
-    counter = 0
-    with progress.Progress() as ui:
-        bar = ui.add_task("Sending...", total=100)
+    # counter = 0
+    with progress.Progress(
+        "{task.completed}/[red]{task.total}",
+        *progress.Progress.get_default_columns(),
+    ) as ui:
+        bar = ui.add_task("Sending...", start=False)
 
         async for data in rsync_copy(src, target):
-            counter += 1
-            if counter >= 1000:
-                counter = 0
-                ui.console.log(data)
-            ui.update(bar, completed=data.pct)
+            # counter += 1
+            # if counter >= 1000:
+            # counter = 0
+            # ui.console.log(data)
+            if data.total is not None and data.to_send is not None:
+                ui.start_task(bar)
+                ui.update(
+                    bar,
+                    total=data.total,
+                    completed=data.total - data.to_send,
+                    description=data.speed,
+                )
