@@ -148,12 +148,14 @@ async def send_with_progress(src: str, target: str) -> None:
         bar = ui.add_task("Sending...", start=False)
 
         async for data in rsync_copy(src, target):
+            ui.start_task(bar)
+            completed = None
             if data.total is not None and data.to_send is not None:
-                ui.start_task(bar)
-                ui.update(
-                    bar,
-                    total=data.total,
-                    completed=data.total - data.to_send,
-                    description=data.speed,
-                    total_known=data.total_known,
-                )
+                completed = data.total - data.to_send
+            ui.update(
+                bar,
+                total=data.total,
+                completed=completed,
+                description=data.speed,
+                total_known=data.total_known,
+            )

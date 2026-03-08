@@ -12,7 +12,7 @@ proj.directory-list = [{'dirloc': loc('.'),
                         'watch_for_changes': True}]
 proj.file-type = 'shared'
 proj.launch-config = {loc('src/longmove/main.py'): ('project',
-        ('send ~/code /tmp/',
+        ('send ~/Downloads/John\\ Wick\\ Chapter\\ 1-4\\ 2014-2023\\ 1080p\\ BluRay\\ HEVC\\ x265\\ 5.1\\ BONE/ tomrutherford@kudunas:/share/Plex/Movies/',
          ''))}
 testing.auto-test-file-specs = (('glob',
                                  'test_*.py'),)
