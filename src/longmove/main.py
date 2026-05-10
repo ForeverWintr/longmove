@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 import click
@@ -105,7 +104,7 @@ def send(source: Path, dest: str) -> None:
     """Send the specified local file SOURCE to the specified destination DEST. DEST is a
     remote destination, e.g: username@server:/path/to/dir/
     """
-    logging.basicConfig(level=logging.DEBUG)
+    util.configure_logging()
     trio.run(core.send_with_progress, str(source), dest)
 
 

@@ -104,6 +104,8 @@ async def rsync_copy(src: str, target: str) -> tp.Iterator[ProgressData]:
         "--info=progress2",
         "--compress",
         "--partial",
+        "--bwlimit",
+        "1024",
         src,
         target,
     ]

@@ -1,7 +1,9 @@
+import logging
 import typing as tp
 from pathlib import Path
 
 import click
+from rich.logging import RichHandler
 
 from longmove.config_file import ConfigFile
 
@@ -35,3 +37,13 @@ class LongmoveConfig(click.ParamType):
             raise click.BadParameter(
                 f"No config file found at {value}. To create one, run {configure.name}"
             ) from e
+
+
+def configure_logging() -> None:
+    # Set up logging and add a rich handler.
+
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(message)s",
+        handlers=[RichHandler(rich_tracebacks=True, tracebacks_suppress=[click])],
+    )
