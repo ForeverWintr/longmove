@@ -39,11 +39,15 @@ class LongmoveConfig(click.ParamType):
             ) from e
 
 
-def configure_logging() -> None:
+def configure_logging(verbosity: int) -> None:
     # Set up logging and add a rich handler.
 
+    level = logging.INFO
+    if verbosity:
+        level = logging.DEBUG
+
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=level,
         format="%(message)s",
         handlers=[RichHandler(rich_tracebacks=True, tracebacks_suppress=[click])],
     )

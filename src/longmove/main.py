@@ -11,8 +11,9 @@ from longmove.config_file import get_default_config_path
 
 
 @click.group()
-def cli() -> None:
-    pass
+@click.option("-v", "--verbose", count=True, help="display debug output")
+def cli(verbose: int) -> None:
+    util.configure_logging(verbose)
 
 
 config_option = click.option(
@@ -104,7 +105,6 @@ def send(source: Path, dest: str) -> None:
     """Send the specified local file SOURCE to the specified destination DEST. DEST is a
     remote destination, e.g: username@server:/path/to/dir/
     """
-    util.configure_logging()
     trio.run(core.send_with_progress, str(source), dest)
 
 
