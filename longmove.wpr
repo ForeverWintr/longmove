@@ -12,7 +12,7 @@ proj.directory-list = [{'dirloc': loc('.'),
                         'watch_for_changes': True}]
 proj.file-type = 'shared'
 proj.launch-config = {loc('src/longmove/main.py'): ('project',
-        ('send . /tmp/lmtest/',
+        ('send --rate-limit 100  /Users/truth/code/longmove/ /tmp/lmtest/',
          ''))}
 testing.auto-test-file-specs = (('glob',
                                  'test_*.py'),)

@@ -97,15 +97,25 @@ class ProgressData:
         )
 
 
-async def rsync_copy(src: str, target: str) -> tp.Iterator[ProgressData]:
-    command = [
-        "rsync",
+async def rsync_copy(
+    src: str, target: str, rate_limit: str | None = None
+) -> tp.Iterator[ProgressData]:
+    args = [
         "--archive",
         "--info=progress2",
         "--compress",
         "--partial",
-        "--bwlimit",
-        "1024",
+    ]
+    if rate_limit:
+        args.extend(
+            [
+                "--bwlimit",
+                rate_limit,
+            ]
+        )
+    command = [
+        "rsync",
+        *args,
         src,
         target,
     ]
@@ -123,24 +133,22 @@ async def rsync_copy(src: str, target: str) -> tp.Iterator[ProgressData]:
         # https://trio.readthedocs.io/en/stable/reference-io.html#trio.Process
         p = await nursery.start(runner)
 
-        stdout = []
         accum = []
         async for bytes_ in p.stdout:
             for char in bytes_.decode():
                 accum.append(char)
                 if char == "\r" and len(accum) > 1:
                     line = "".join(accum)
-                    stdout.append(line)
-                    accum = []
+                    log.debug(line)
+                    accum.clear()
                     yield ProgressData.from_rsync_line(line)
 
         await p.wait()
 
-        log.debug("Stdout:")
-        log.debug("".join(stdout))
 
-
-async def send_with_progress(src: str, target: str) -> None:
+async def send_with_progress(
+    src: str, target: str, rate_limit: str | None = None
+) -> None:
     """Send src to target"""
 
     with progress.Progress(
@@ -149,7 +157,8 @@ async def send_with_progress(src: str, target: str) -> None:
     ) as ui:
         bar = ui.add_task("Sending...", start=False)
 
-        async for data in rsync_copy(src, target):
+        async for data in rsync_copy(src, target, rate_limit=rate_limit):
+            log.debug(data)
             ui.start_task(bar)
             completed = None
             if data.total is not None and data.to_send is not None:

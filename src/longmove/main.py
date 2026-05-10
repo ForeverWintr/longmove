@@ -101,11 +101,14 @@ def offload(config_file: ConfigFile) -> None:
     type=click.Path(exists=True, readable=True, resolve_path=True, path_type=Path),
 )
 @click.argument("dest")
-def send(source: Path, dest: str) -> None:
+@click.option(
+    "--rate-limit", help="Limit transfer rate. Passed to rsync's bwlimit argument"
+)
+def send(source: Path, dest: str, rate_limit: str | None) -> None:
     """Send the specified local file SOURCE to the specified destination DEST. DEST is a
     remote destination, e.g: username@server:/path/to/dir/
     """
-    trio.run(core.send_with_progress, str(source), dest)
+    trio.run(core.send_with_progress, str(source), dest, rate_limit)
 
 
 if __name__ == "__main__":

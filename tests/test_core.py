@@ -11,7 +11,7 @@ async def test_rsync_copy(trio_path: trio.Path, source_files: Path):
     source_files = trio.Path(source_files)
 
     assert not await tgt.exists()
-    async for out in core.rsync_copy(str(source_files), str(tgt)):
+    async for out in core.rsync_copy(str(source_files), str(tgt), rate_limit="100"):
         assert isinstance(out, core.ProgressData)
 
     assert await tgt.exists()
