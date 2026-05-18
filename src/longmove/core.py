@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 
 @dataclass(frozen=True, kw_only=True)
 class ProgressData:
+    filename: str
     bytes_: int
     pct: float
     speed: str
@@ -41,7 +42,7 @@ class ProgressData:
     )
 
     @classmethod
-    def from_rsync_line(cls, line: str) -> tp.Self:
+    def from_rsync_line(cls, filename: str, line: str) -> tp.Self:
         """Parse a single line of rsync output. Based on `man rsync` and this SO
         explanation: https://unix.stackexchange.com/a/261139/169944
 
@@ -81,13 +82,15 @@ class ProgressData:
         total = None
         transfer_num = None
         if transfer:
-            # The transfer section is not always printed.
+            # The transfer section is not printed for partial transfer reports. I.e. it
+            # is only printed when a file transfer finishes.
             transfer_num = int(transfer)
             total_known = match.group("check_kind") == "to-chk"
             to_send = int(match.group("to_send"))
             total = int(match.group("total"))
 
         return cls(
+            filename=filename,
             bytes_=int(match.group("bytes").replace(",", "")),
             pct=int(match.group("pct")),
             speed=match.group("speed"),
@@ -103,9 +106,14 @@ class ProgressData:
         cls, rsync_runner: trio.Process
     ) -> tp.Iterator[tp.Self]:
         """Yield instances by parsing stdout from rsync_runner"""
+
+        fn = ""
         async for line in util.gen_lines(rsync_runner.stdout):
-            raise NotImplementedError("WIP")
-        yield 1
+            # Lines are either filenames or progress lines. Progress lines are indented.
+            if not line[0].isspace():
+                fn = line
+            else:
+                yield cls.from_rsync_line(fn, line)
 
 
 async def rsync_copy(
