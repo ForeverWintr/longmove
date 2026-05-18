@@ -111,7 +111,7 @@ class ProgressData:
         async for line in util.gen_lines(rsync_runner.stdout):
             # Lines are either filenames or progress lines. Progress lines are indented.
             if not line[0].isspace():
-                fn = line
+                fn = line.strip()
             else:
                 yield cls.from_rsync_line(fn, line)
 
@@ -121,7 +121,8 @@ async def rsync_copy(
 ) -> tp.Iterator[ProgressData]:
     args = [
         "--archive",
-        "--info=progress2",
+        # Show per file progress and filename
+        "--info=progress,NAME",
         "--compress",
         "--partial",
     ]
@@ -152,18 +153,8 @@ async def rsync_copy(
         # https://trio.readthedocs.io/en/stable/reference-io.html#trio.Process
         p = await nursery.start(runner)
 
-        accum = []
         async for r in ProgressData.gen_from_rsync_process(p):
             yield r
-        async for bytes_ in p.stdout:
-            for char in bytes_.decode():
-                accum.append(char)
-                if char == "\r" and len(accum) > 1:
-                    line = "".join(accum)
-                    log.debug(line)
-                    accum.clear()
-                    yield ProgressData.from_rsync_line(line)
-
         await p.wait()
 
 
