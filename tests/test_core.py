@@ -1,3 +1,5 @@
+import functools
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -74,7 +76,7 @@ def test_progress_from_rsync_line():
         assert result == expected
 
 
-def test_sent_with_progress(
+def test_send_with_progress(
     tmp_path: Path,
     source_files: Path,
     capsys: pytest.CaptureFixture,
@@ -83,3 +85,20 @@ def test_sent_with_progress(
     trio.run(core.send_with_progress, str(source_files), f"{out_dir}")
     out, err = capsys.readouterr()
     assert not err
+
+
+async def test_progress_data_gen_from_rsync_process() -> None:
+    test_output = Path(__file__).parent / "progress_output.txt"
+
+    runner = functools.partial(
+        trio.run_process,
+        command=["cat", str(test_output)],
+        stdout=subprocess.PIPE,
+    )
+    result = []
+    async with trio.open_nursery() as n:
+        p = await n.start(runner)
+        async for r in core.ProgressData.gen_from_rsync_process(p):
+            result.append(r)
+
+    assert 0

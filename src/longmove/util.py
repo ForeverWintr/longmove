@@ -4,6 +4,7 @@ from pathlib import Path
 
 import click
 from rich.logging import RichHandler
+from trio.lowlevel import FdStream
 
 from longmove.config_file import ConfigFile
 
@@ -51,3 +52,17 @@ def configure_logging(verbosity: int) -> None:
         format="%(message)s",
         handlers=[RichHandler(rich_tracebacks=True, tracebacks_suppress=[click])],
     )
+
+
+async def gen_lines(
+    stream: FdStream,
+    line_delimiters: frozenset[str] = frozenset(("\r", "\n")),
+) -> tp.Iterator[str]:
+    """Consume and yield lines from stream"""
+    accum = []
+    async for bytes_ in stream:
+        for char in bytes_.decode():
+            accum.append(char)
+            if len(accum) > 1 and char in line_delimiters:
+                yield "".join(accum)
+                accum.clear()

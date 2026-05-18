@@ -8,6 +8,8 @@ from dataclasses import dataclass
 import trio
 from rich import progress
 
+from longmove import util
+
 log = logging.getLogger(__name__)
 
 
@@ -96,6 +98,15 @@ class ProgressData:
             total_known=total_known,
         )
 
+    @classmethod
+    async def gen_from_rsync_process(
+        cls, rsync_runner: trio.Process
+    ) -> tp.Iterator[tp.Self]:
+        """Yield instances by parsing stdout from rsync_runner"""
+        async for line in util.gen_lines(rsync_runner.stdout):
+            raise NotImplementedError("WIP")
+        yield 1
+
 
 async def rsync_copy(
     src: str, target: str, rate_limit: str | None = None
@@ -134,6 +145,8 @@ async def rsync_copy(
         p = await nursery.start(runner)
 
         accum = []
+        async for r in ProgressData.gen_from_rsync_process(p):
+            yield r
         async for bytes_ in p.stdout:
             for char in bytes_.decode():
                 accum.append(char)
