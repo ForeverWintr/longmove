@@ -83,6 +83,10 @@ def test_progress_from_rsync_line():
         result = P.from_rsync_line(fn, line)
         assert result == expected
 
+    # Test invalid lines for coverage sake.
+    with pytest.raises(ValueError):
+        P.from_rsync_line("", "badline")
+
 
 def test_send_with_progress(
     tmp_path: Path,
