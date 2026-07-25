@@ -32,7 +32,7 @@ def test_progress_from_rsync_line():
 
     line_to_expected = {
         "100  25%    0.00kB/s    0:00:00": P(
-            filename=fn,
+            file_path=fn,
             bytes_=100,
             pct=25,
             speed="0.00kB/s",
@@ -43,7 +43,7 @@ def test_progress_from_rsync_line():
             total_known=False,
         ),
         "100  25%    0.00kB/s    0:00:00 (xfr#1, to-chk=3/5)": P(
-            filename=fn,
+            file_path=fn,
             bytes_=100,
             pct=25,
             speed="0.00kB/s",
@@ -54,7 +54,7 @@ def test_progress_from_rsync_line():
             total_known=True,
         ),
         "200  50%   97.66kB/s    0:00:00 (xfr#2, to-chk=2/5)": P(
-            filename=fn,
+            file_path=fn,
             bytes_=200,
             pct=50,
             speed="97.66kB/s",
@@ -65,7 +65,7 @@ def test_progress_from_rsync_line():
             total_known=True,
         ),
         "3,356,292,837  99%  148.37MB/s    0:00:21 (xfr#28130, ir-chk=1292/33839)": P(
-            filename=fn,
+            file_path=fn,
             bytes_=3_356_292_837,
             pct=99,
             speed="148.37MB/s",
@@ -108,7 +108,7 @@ async def test_progress_data_gen_from_rsync_process() -> None:
             result.append(r)
 
     assert result[0] == core.ProgressData(
-        filename="longmove/progress_output.txt",
+        file_path="longmove/progress_output.txt",
         bytes_=10,
         pct=100,
         speed="0.00kB/s",
@@ -119,7 +119,7 @@ async def test_progress_data_gen_from_rsync_process() -> None:
         total_known=False,
     )
     assert result[-1] == core.ProgressData(
-        filename="longmove/tests/__pycache__/test_util.cpython-313-pytest-8.4.1.pyc",
+        file_path="longmove/tests/__pycache__/test_util.cpython-313-pytest-8.4.1.pyc",
         bytes_=7305,
         pct=100,
         speed="12.85kB/s",
@@ -128,4 +128,32 @@ async def test_progress_data_gen_from_rsync_process() -> None:
         to_send=0,
         total=2567,
         total_known=True,
+    )
+
+
+async def test_render_progress() -> None:
+    test_output = Path(__file__).parent / "progress_output.txt"
+
+    runner = functools.partial(
+        trio.run_process,
+        command=["cat", str(test_output)],
+        stdout=subprocess.PIPE,
+    )
+
+    ui = core._build_progress()
+    with ui:
+        async with trio.open_nursery() as n:
+            p = await n.start(runner)
+            await core.render_progress(ui, core.ProgressData.gen_from_rsync_process(p))
+
+    overall, current = ui.tasks
+
+    # The saved output ends at file 1905 with to-chk=0/2567, so the overall bar
+    # finishes at all 2567 files and the current-file bar at 100% of the last file.
+    assert overall.total == 2567
+    assert overall.completed == 2567
+    assert current.total == 100
+    assert current.completed == 100
+    assert current.description == (
+        "longmove/tests/__pycache__/test_util.cpython-313-pytest-8.4.1.pyc"
     )

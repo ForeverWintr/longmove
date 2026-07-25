@@ -14,6 +14,7 @@ proj.file-type = 'shared'
 proj.launch-config = {loc('src/longmove/main.py'): ('project',
         ('send --rate-limit 100  /Users/truth/code/longmove/ /tmp/lmtest/',
          ''))}
+testing.auto-discover = True
 testing.auto-test-file-specs = (('glob',
                                  'test_*.py'),)
 testing.test-framework = {None: ':internal pytest'}

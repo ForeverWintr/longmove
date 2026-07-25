@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 @dataclass(frozen=True, kw_only=True)
 class ProgressData:
-    filename: str
+    file_path: str
     bytes_: int
     pct: float
     speed: str
@@ -42,7 +42,7 @@ class ProgressData:
     )
 
     @classmethod
-    def from_rsync_line(cls, filename: str, line: str) -> tp.Self:
+    def from_rsync_line(cls, file_path: str, line: str) -> tp.Self:
         """Parse a single line of rsync output. Based on `man rsync` and this SO
         explanation: https://unix.stackexchange.com/a/261139/169944
 
@@ -90,7 +90,7 @@ class ProgressData:
             total = int(match.group("total"))
 
         return cls(
-            filename=filename,
+            file_path=file_path,
             bytes_=int(match.group("bytes").replace(",", "")),
             pct=int(match.group("pct")),
             speed=match.group("speed"),
@@ -107,13 +107,13 @@ class ProgressData:
     ) -> tp.Iterator[tp.Self]:
         """Yield instances by parsing stdout from rsync_runner"""
 
-        fn = ""
+        fp = ""
         async for line in util.gen_lines(rsync_runner.stdout):
-            # Lines are either filenames or progress lines. Progress lines are indented.
+            # Lines are either file_paths or progress lines. Progress lines are indented.
             if not line[0].isspace():
-                fn = line.strip()
+                fp = line.strip()
             else:
-                yield cls.from_rsync_line(fn, line)
+                yield cls.from_rsync_line(fp, line)
 
 
 async def rsync_copy(
@@ -158,27 +158,49 @@ async def rsync_copy(
         await p.wait()
 
 
+def _build_progress() -> progress.Progress:
+    return progress.Progress(
+        *progress.Progress.get_default_columns(),
+        progress.MofNCompleteColumn(),
+    )
+
+
+async def render_progress(
+    ui: progress.Progress,
+    data_stream: tp.AsyncIterator[ProgressData],
+) -> None:
+    """Drive two stacked progress bars from a stream of ProgressData: an overall
+    file-count bar and, below it, a bar for the file currently transferring."""
+    overall = ui.add_task("Total", start=False)
+    current = ui.add_task("", start=False, visible=False)
+
+    async for data in data_stream:
+        log.debug(data)
+
+        # Current-file bar: percent complete of the file transferring now.
+        ui.start_task(current)
+        ui.update(
+            current,
+            description=data.file_path,
+            total=100,
+            completed=data.pct,
+            visible=True,
+        )
+
+        # Overall bar: only the transfer-summary lines carry the file counts.
+        if data.total is not None and data.to_send is not None:
+            ui.start_task(overall)
+            ui.update(
+                overall,
+                total=data.total,
+                completed=data.total - data.to_send,
+            )
+
+
 async def send_with_progress(
     src: str, target: str, rate_limit: str | None = None
 ) -> None:
     """Send src to target"""
 
-    with progress.Progress(
-        *progress.Progress.get_default_columns(),
-        progress.MofNCompleteColumn(),
-    ) as ui:
-        bar = ui.add_task("Sending...", start=False)
-
-        async for data in rsync_copy(src, target, rate_limit=rate_limit):
-            log.debug(data)
-            ui.start_task(bar)
-            completed = None
-            if data.total is not None and data.to_send is not None:
-                completed = data.total - data.to_send
-            ui.update(
-                bar,
-                total=data.total,
-                completed=completed,
-                description=data.speed,
-                total_known=data.total_known,
-            )
+    with _build_progress() as ui:
+        await render_progress(ui, rsync_copy(src, target, rate_limit=rate_limit))
