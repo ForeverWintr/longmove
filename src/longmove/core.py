@@ -8,6 +8,8 @@ from pathlib import Path
 
 import trio
 from rich import progress
+from rich.console import Console
+from rich.table import Column
 
 from longmove import util
 
@@ -163,10 +165,32 @@ async def rsync_copy(
         await p.wait()
 
 
-def _build_progress() -> progress.Progress:
+def _build_progress(
+    name_ratio: int = 2,
+    bar_ratio: int = 3,
+    console: Console | None = None,
+) -> progress.Progress:
+    # Give the bar bar_ratio/(name_ratio + bar_ratio) of the full terminal width
+    # (so bar_ratio=3, name_ratio=2 -> 60%). The width is sized once from the
+    # current terminal; the name column (ratio=1) absorbs the remaining space, so
+    # it holds a fixed width regardless of filename length -- long names truncate
+    # rather than pushing the bar around.
+    console = console or Console()
+    bar_fraction = bar_ratio / (name_ratio + bar_ratio)
+    bar_width = int(console.width * bar_fraction)
     return progress.Progress(
-        *progress.Progress.get_default_columns(),
+        progress.TextColumn(
+            "[progress.description]{task.description}",
+            table_column=Column(
+                no_wrap=True, overflow="ellipsis", ratio=1, min_width=6
+            ),
+        ),
+        progress.BarColumn(bar_width=bar_width),
+        progress.TaskProgressColumn(),
+        progress.TimeRemainingColumn(),
         progress.MofNCompleteColumn(),
+        console=console,
+        expand=True,
     )
 
 
@@ -178,19 +202,17 @@ async def render_progress(
     file-count bar and, below it, a bar for the file currently transferring."""
     overall = ui.add_task("Total", start=False)
     current = ui.add_task("", start=False, visible=False)
-    max_name_len = 0
 
     async for data in data_stream:
         log.debug(data)
 
-        # Current-file bar: percent complete of the file transferring now. Pad the
-        # name out to the widest seen so far so the field only ever grows -- this
-        # stops the bar to its right from jumping around as names change length.
-        max_name_len = max(max_name_len, len(data.name))
+        # Current-file bar: percent complete of the file transferring now. The
+        # name column is fixed-width (see _build_progress), so long names are
+        # truncated and the bar to its right stays put.
         ui.start_task(current)
         ui.update(
             current,
-            description=data.name.ljust(max_name_len),
+            description=data.name,
             total=100,
             completed=data.pct,
             visible=True,

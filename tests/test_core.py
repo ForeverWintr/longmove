@@ -1,10 +1,11 @@
 import functools
 import subprocess
-import typing as tp
 from pathlib import Path
 
 import pytest
 import trio
+from rich.console import Console
+from rich.progress import BarColumn
 
 from longmove import core
 
@@ -155,35 +156,31 @@ async def test_render_progress() -> None:
     assert overall.completed == 2567
     assert current.total == 100
     assert current.completed == 100
-    # Only the basename is shown (padded out to the widest name seen).
-    assert current.description.strip() == "test_util.cpython-313-pytest-8.4.1.pyc"
+    # Only the basename is shown; it fits under the width cap so it is untouched.
+    assert current.description == "test_util.cpython-313-pytest-8.4.1.pyc"
 
 
-async def test_render_progress_name_does_not_shrink() -> None:
-    def data(file_path: str) -> core.ProgressData:
-        return core.ProgressData(
-            file_path=file_path,
-            bytes_=1,
-            pct=100,
-            speed="0.00kB/s",
-            time_remaining="0:00:00",
-            transfer_num=None,
-            to_send=None,
-            total=None,
-            total_known=False,
-        )
+def test_bar_width_is_fraction_of_console() -> None:
+    console = Console(width=100)
+    ui = core._build_progress(name_ratio=2, bar_ratio=3, console=console)
 
-    async def stream() -> tp.AsyncIterator[core.ProgressData]:
-        # Names get shorter over time.
-        yield data("a/long_name.txt")
-        yield data("b/x.txt")
+    bar_col = ui.columns[1]
+    assert isinstance(bar_col, BarColumn)
+    # bar_ratio / (name_ratio + bar_ratio) == 0.6 of the terminal width.
+    assert bar_col.bar_width == 60
 
-    ui = core._build_progress()
-    with ui:
-        await core.render_progress(ui, stream())
 
-    _overall, current = ui.tasks
+def test_name_column_truncates() -> None:
+    console = Console(width=100)
+    ui = core._build_progress(console=console)
+    long_name = "x" * 60
+    ui.add_task(long_name, total=100, completed=10)
 
-    # The field grew to the longest name, then held that width for the short one.
-    assert current.description.strip() == "x.txt"
-    assert len(current.description) == len("long_name.txt")
+    # The bar takes 60 cols, leaving a narrow name column, so a 60-char name
+    # cannot fit and is truncated with an ellipsis.
+    with console.capture() as cap:
+        console.print(ui.make_tasks_table(ui.tasks))
+    out = cap.get()
+
+    assert "…" in out
+    assert long_name not in out
