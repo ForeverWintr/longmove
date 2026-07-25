@@ -176,9 +176,7 @@ def _build_progress(
     # current terminal; the name column (ratio=1) absorbs the remaining space, so
     # it holds a fixed width regardless of filename length -- long names truncate
     # rather than pushing the bar around.
-    # Fall back to rich's shared global console (not a fresh Console()) so the
-    # progress Live display and the RichHandler logger write to the same console
-    # -- that is what lets log output render above the bars instead of colliding.
+    # Fall back to rich's shared global console.
     console = console or get_console()
     bar_fraction = bar_ratio / (name_ratio + bar_ratio)
     bar_width = int(console.width * bar_fraction)
