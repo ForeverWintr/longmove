@@ -15,16 +15,17 @@ async def test_rsync_copy(trio_path: trio.Path, source_files: Path):
     source_files = trio.Path(source_files)
 
     assert not await tgt.exists()
-    async for out in core.rsync_copy(str(source_files), str(tgt), rate_limit="100"):
+    async for out in core.rsync_copy(f"{source_files}/", str(tgt), rate_limit="100"):
         assert isinstance(out, core.ProgressData)
 
     assert await tgt.exists()
     for f in await source_files.iterdir():
-        tgt / f.name
+        t = tgt / f.relative_to(source_files)
 
+        assert await t.exists()
         fs = await f.stat()
-        fts = await f.stat()
-        assert fs == fts
+        fts = await t.stat()
+        assert (fs.st_size, fs.st_mtime) == (fts.st_size, fts.st_mtime)
 
 
 def test_progress_from_rsync_line():
