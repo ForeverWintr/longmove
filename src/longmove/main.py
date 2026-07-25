@@ -108,7 +108,10 @@ def send(source: Path, dest: str, rate_limit: str | None) -> None:
     """Send the specified local file SOURCE to the specified destination DEST. DEST is a
     remote destination, e.g: username@server:/path/to/dir/
     """
-    trio.run(core.send_with_progress, str(source), dest, rate_limit)
+    try:
+        trio.run(core.send_with_progress, str(source), dest, rate_limit)
+    except util.RsyncError as e:
+        raise click.ClickException(str(e)) from e
 
 
 if __name__ == "__main__":

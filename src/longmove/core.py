@@ -142,7 +142,7 @@ async def rsync_copy(
             ]
         )
     command = [
-        "rsync",
+        util.get_rsync_command(),
         *args,
         src,
         target,
