@@ -57,12 +57,15 @@ def configure_logging(verbosity: int) -> None:
 async def gen_lines(
     stream: FdStream,
     line_delimiters: frozenset[str] = frozenset(("\r", "\n")),
-) -> tp.Iterator[str]:
+) -> tp.AsyncIterator[str]:
     """Consume and yield lines from stream"""
-    accum = []
+    accum: list[str] = []
     async for bytes_ in stream:
         for char in bytes_.decode():
             accum.append(char)
             if len(accum) > 1 and char in line_delimiters:
                 yield "".join(accum)
                 accum.clear()
+
+    if accum:
+        yield "".join(accum)

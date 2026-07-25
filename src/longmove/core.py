@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 class ProgressData:
     file_path: str
     bytes_: int
-    pct: float
+    pct: int
     speed: str
     time_remaining: str
     transfer_num: int | None
@@ -112,7 +112,7 @@ class ProgressData:
     @classmethod
     async def gen_from_rsync_process(
         cls, rsync_runner: trio.Process
-    ) -> tp.Iterator[tp.Self]:
+    ) -> tp.AsyncIterator[tp.Self]:
         """Yield instances by parsing stdout from rsync_runner"""
 
         fp = ""
@@ -126,7 +126,7 @@ class ProgressData:
 
 async def rsync_copy(
     src: str, target: str, rate_limit: str | None = None
-) -> tp.Iterator[ProgressData]:
+) -> tp.AsyncIterator[ProgressData]:
     args = [
         "--archive",
         # Show per file progress and filename

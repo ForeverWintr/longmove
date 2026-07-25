@@ -36,7 +36,7 @@ def source_files(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def source_files_big(tmp_path: Path) -> Path:
-    root = tmp_path / "root"
+    root = tmp_path / "root_big"
     root.mkdir()
     for char in "abcd":
         f = root / f"{char}.txt"
