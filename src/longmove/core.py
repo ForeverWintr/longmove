@@ -4,6 +4,7 @@ import re
 import subprocess
 import typing as tp
 from dataclasses import dataclass
+from pathlib import Path
 
 import trio
 from rich import progress
@@ -40,6 +41,10 @@ class ProgressData:
         """,
         re.VERBOSE,
     )
+
+    @property
+    def name(self) -> str:
+        return Path(self.file_path).name
 
     @classmethod
     def from_rsync_line(cls, file_path: str, line: str) -> tp.Self:
@@ -173,15 +178,19 @@ async def render_progress(
     file-count bar and, below it, a bar for the file currently transferring."""
     overall = ui.add_task("Total", start=False)
     current = ui.add_task("", start=False, visible=False)
+    max_name_len = 0
 
     async for data in data_stream:
         log.debug(data)
 
-        # Current-file bar: percent complete of the file transferring now.
+        # Current-file bar: percent complete of the file transferring now. Pad the
+        # name out to the widest seen so far so the field only ever grows -- this
+        # stops the bar to its right from jumping around as names change length.
+        max_name_len = max(max_name_len, len(data.name))
         ui.start_task(current)
         ui.update(
             current,
-            description=data.file_path,
+            description=data.name.ljust(max_name_len),
             total=100,
             completed=data.pct,
             visible=True,

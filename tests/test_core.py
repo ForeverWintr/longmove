@@ -1,5 +1,6 @@
 import functools
 import subprocess
+import typing as tp
 from pathlib import Path
 
 import pytest
@@ -154,6 +155,35 @@ async def test_render_progress() -> None:
     assert overall.completed == 2567
     assert current.total == 100
     assert current.completed == 100
-    assert current.description == (
-        "longmove/tests/__pycache__/test_util.cpython-313-pytest-8.4.1.pyc"
-    )
+    # Only the basename is shown (padded out to the widest name seen).
+    assert current.description.strip() == "test_util.cpython-313-pytest-8.4.1.pyc"
+
+
+async def test_render_progress_name_does_not_shrink() -> None:
+    def data(file_path: str) -> core.ProgressData:
+        return core.ProgressData(
+            file_path=file_path,
+            bytes_=1,
+            pct=100,
+            speed="0.00kB/s",
+            time_remaining="0:00:00",
+            transfer_num=None,
+            to_send=None,
+            total=None,
+            total_known=False,
+        )
+
+    async def stream() -> tp.AsyncIterator[core.ProgressData]:
+        # Names get shorter over time.
+        yield data("a/long_name.txt")
+        yield data("b/x.txt")
+
+    ui = core._build_progress()
+    with ui:
+        await core.render_progress(ui, stream())
+
+    _overall, current = ui.tasks
+
+    # The field grew to the longest name, then held that width for the short one.
+    assert current.description.strip() == "x.txt"
+    assert len(current.description) == len("long_name.txt")
