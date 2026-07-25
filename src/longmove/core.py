@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import trio
+from rich import get_console
 from rich import progress
 from rich.console import Console
 from rich.table import Column
@@ -175,7 +176,10 @@ def _build_progress(
     # current terminal; the name column (ratio=1) absorbs the remaining space, so
     # it holds a fixed width regardless of filename length -- long names truncate
     # rather than pushing the bar around.
-    console = console or Console()
+    # Fall back to rich's shared global console (not a fresh Console()) so the
+    # progress Live display and the RichHandler logger write to the same console
+    # -- that is what lets log output render above the bars instead of colliding.
+    console = console or get_console()
     bar_fraction = bar_ratio / (name_ratio + bar_ratio)
     bar_width = int(console.width * bar_fraction)
     return progress.Progress(
