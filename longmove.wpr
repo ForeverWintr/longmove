@@ -1,5 +1,5 @@
 #!wing
-#!version=11.0
+#!version=12.0
 ##################################################################
 # Wing project file                                              #
 ##################################################################
@@ -12,8 +12,9 @@ proj.directory-list = [{'dirloc': loc('.'),
                         'watch_for_changes': True}]
 proj.file-type = 'shared'
 proj.launch-config = {loc('src/longmove/main.py'): ('project',
-        ('init',
+        ('send --rate-limit 100  /Users/truth/code/longmove/ /tmp/lmtest/',
          ''))}
+testing.auto-discover = True
 testing.auto-test-file-specs = (('glob',
                                  'test_*.py'),)
 testing.test-framework = {None: ':internal pytest'}

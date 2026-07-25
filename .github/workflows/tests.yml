@@ -62,6 +62,17 @@ jobs:
     - name: Install library
       run: poetry install --no-interaction
 
+    # macOS ships Apple's openrsync (no --info/progress support). Install GNU
+    # rsync and put it ahead of /usr/bin on PATH so the transfer tests run.
+    - name: Install GNU rsync (macOS)
+      if: runner.os == 'macOS'
+      env:
+        HOMEBREW_NO_AUTO_UPDATE: "1"
+      run: |
+        brew install rsync
+        echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
+        "$(brew --prefix)/bin/rsync" --version | head -n 1
+
     - name: Run tests
       run: poetry run pytest --cov=longmove --cov-report=xml
 

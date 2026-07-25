@@ -1,14 +1,19 @@
 from pathlib import Path
 
 import click
+import trio
 
-from longmove import constants, util
-from longmove.config_file import ConfigFile, get_default_config_path
+from longmove import constants
+from longmove import core
+from longmove import util
+from longmove.config_file import ConfigFile
+from longmove.config_file import get_default_config_path
 
 
 @click.group()
-def cli() -> None:
-    pass
+@click.option("-v", "--verbose", count=True, help="display debug output")
+def cli(verbose: int) -> None:
+    util.configure_logging(verbose)
 
 
 config_option = click.option(
@@ -88,6 +93,25 @@ def register(path: Path, config_file: ConfigFile) -> None:
 def offload(config_file: ConfigFile) -> None:
     """Transfer tracked files to remote"""
     raise NotImplementedError("WIP")
+
+
+@cli.command()
+@click.argument(
+    "source",
+    type=click.Path(exists=True, readable=True, resolve_path=True, path_type=Path),
+)
+@click.argument("dest")
+@click.option(
+    "--rate-limit", help="Limit transfer rate. Passed to rsync's bwlimit argument"
+)
+def send(source: Path, dest: str, rate_limit: str | None) -> None:
+    """Send the specified local file SOURCE to the specified destination DEST. DEST is a
+    remote destination, e.g: username@server:/path/to/dir/
+    """
+    try:
+        trio.run(core.send_with_progress, str(source), dest, rate_limit)
+    except util.RsyncError as e:
+        raise click.ClickException(str(e)) from e
 
 
 if __name__ == "__main__":

@@ -4,7 +4,9 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
+from longmove import core
 from longmove import main
+from longmove import util
 from longmove.config_file import ConfigFile
 
 
@@ -38,6 +40,27 @@ def test_configure(basic_config: ConfigFile) -> None:
     conf = ConfigFile.from_file(basic_config.config_location)
     assert conf.remote_name == "name"
     assert conf.remote_root == "root"
+
+
+def test_send_surfaces_rsync_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An RsyncError from the transfer is reported as a clean CLI error, not a
+    traceback."""
+
+    async def boom(*args: object, **kwargs: object) -> None:
+        raise util.RsyncError("descriptive msg")
+
+    monkeypatch.setattr(core, "send_with_progress", boom)
+
+    file = tmp_path / "test.txt"
+    file.write_text("")
+
+    runner = CliRunner()
+    result = runner.invoke(main.cli, ["send", str(file), "dest"])
+
+    assert result.exit_code != 0
+    assert "descriptive msg" in result.output
 
 
 @pytest.mark.skip("wip")

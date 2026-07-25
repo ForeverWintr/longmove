@@ -12,6 +12,7 @@ dependencies = [
     "trio>=0.30.0",
     "tomlkit (>=0.13.3,<0.14.0)",
     "platformdirs (>=4.4.0,<5.0.0)",
+    "rich>=14.3.3",
 ]
 
 [project.scripts]
@@ -31,3 +32,6 @@ dev = [
 
 [tool.pytest.ini_options]
 trio_mode = true
+
+[tool.ruff.lint.isort]
+force-single-line = true
