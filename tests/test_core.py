@@ -115,25 +115,25 @@ async def test_progress_data_gen_from_rsync_process() -> None:
             result.append(r)
 
     assert result[0] == core.ProgressData(
-        file_path="longmove/progress_output.txt",
-        bytes_=10,
+        file_path=".gitignore",
+        bytes_=4526,
         pct=100,
         speed="0.00kB/s",
         time_remaining="0:00:00",
-        transfer_num=None,
-        to_send=None,
-        total=None,
+        transfer_num=1,
+        to_send=1022,
+        total=1024,
         total_known=False,
     )
     assert result[-1] == core.ProgressData(
-        file_path="longmove/tests/__pycache__/test_util.cpython-313-pytest-8.4.1.pyc",
-        bytes_=7305,
+        file_path="tests/__pycache__/test_util.cpython-313-pytest-8.4.1.pyc",
+        bytes_=13026,
         pct=100,
-        speed="12.85kB/s",
+        speed="33.39kB/s",
         time_remaining="0:00:00",
-        transfer_num=1905,
+        transfer_num=2279,
         to_send=0,
-        total=2567,
+        total=2694,
         total_known=True,
     )
 
