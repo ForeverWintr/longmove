@@ -130,7 +130,7 @@ async def rsync_copy(
     args = [
         "--archive",
         # Show per file progress and filename
-        "--info=progress,NAME",
+        "--progress",
         "--compress",
         "--partial",
     ]
