@@ -155,10 +155,10 @@ async def test_render_progress() -> None:
 
     overall, current = ui.tasks
 
-    # The saved output ends at file 1905 with to-chk=0/2567, so the overall bar
-    # finishes at all 2567 files and the current-file bar at 100% of the last file.
-    assert overall.total == 2567
-    assert overall.completed == 2567
+    # The saved output ends with to-chk=0/2694, so the overall bar finishes at
+    # all 2694 files and the current-file bar at 100% of the last file.
+    assert overall.total == 2694
+    assert overall.completed == 2694
     assert current.total == 100
     assert current.completed == 100
     # Only the basename is shown; it fits under the width cap so it is untouched.
